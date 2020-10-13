@@ -1,0 +1,50 @@
+package hu.member;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class LoginCtr {
+	private static final Integer cookieExpire = 60 * 60 * 24 * 30;// 1달 만료
+	
+	@Autowired
+	private MemberSvc memberSvc;
+	
+	@RequestMapping(value="memberLogin")
+	public String memberLogin(HttpServletRequest request, ModelMap modelMap) {
+		String userid = get_cookie("sid", request);
+		modelMap.addAttribute("userid", userid);
+	}
+	
+	
+	/**
+     * 쿠키 가져오기.     
+     */
+    public static String get_cookie(String cid, HttpServletRequest request) {
+        String ret = "";
+
+        if (request == null) {
+            return ret;
+        }
+        
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return ret;
+        }
+        
+        for (Cookie ck : cookies) {
+            if (ck.getName().equals(cid)) {
+                ret = ck.getValue();
+                
+                ck.setMaxAge(cookieExpire);
+                break; 
+            }
+          }
+        return ret; 
+    }
+}

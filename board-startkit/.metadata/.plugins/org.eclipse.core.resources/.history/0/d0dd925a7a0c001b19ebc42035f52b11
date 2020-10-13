@@ -1,0 +1,5 @@
+package hu.common;
+
+public class UtilEtc {
+	static final Logger LOGGER = LoggerFactory.getLogger(BoardSvc.class);
+}

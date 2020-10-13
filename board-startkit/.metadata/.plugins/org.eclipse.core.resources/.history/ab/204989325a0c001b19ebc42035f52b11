@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="member">
+	<select id="selectMember4Login" parameterType ="hu.member.LoginVO" resultType="hu.member.UserVO">
+		SELECT USERNO, USERID, USERNM, USERROLE
+		FROM COM_USER CU
+		WHERE CU.DELETEFLAG='N'
+		AND CU.USERID = #{userid} AND USERPW=SHA2(#{userpw}, 256)
+	</select>
+
+</mapper>

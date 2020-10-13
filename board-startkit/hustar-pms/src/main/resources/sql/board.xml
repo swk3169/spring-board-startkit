@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="board">
+
+	<!-- 보드 읽기 -->
+	
+	<select id="selectBoardGroupOne4Used" parameterType="String" resultType="hu.admin.board.BoardGroupVO">
+		SELECT BGNO, BGNAME, BGUSED, BGREPLY, BGREADONLY, BGNOTICE
+        FROM TBL_BOARDGROUP
+        WHERE BGDELETEFLAG='N' AND BGNO=#{bgno} AND BGUSED='Y'
+	</select>
+	
+	
+	<sql id ="includeBoard">
+		 WHERE BRDDELETEFLAG='N' AND TBG.BGDELETEFLAG='N'
+        <if test="bgno!=null and bgno!=''">
+            AND TB.BGNO=#{bgno}
+        </if>  
+        <if test="searchKeyword!=null and searchKeyword!='' and searchType!=''">
+            <foreach item="item" index="index" collection="searchTypeArr" separator=" OR " open="AND (" close=")">
+                 ${item} LIKE CONCAT('%', #{searchKeyword},'%' )
+            </foreach>
+        </if>               
+	</sql>
+	
+	
+	<select id="selectBoardCount" resultType="Integer" parameterType="hu.board.BoardSearchVO">
+		SELECT COUNT(*)
+		FROM TBL_BOARD TB
+		INNER JOIN TBL_BOARDGROUP TBG ON TBG.BGNO=TB.BGNO
+		INNER JOIN COM_USER CU ON TB.USERNO=CU.USERNO
+		<include refid="includeBoard" />
+	</select>
+
+
+	<select id="selectBoardList" resultType="hu.board.BoardVO" parameterType="hu.board.BoardSearchVO">
+		SELECT BRDNO, BRDTITLE, DATE_FORMAT(BRDDATE,'%Y-%m-%d') BRDDATE, BRDLIKE
+             , TB.USERNO, USERNM BRDWRITER, BGNAME, TB.BGNO
+             , (SELECT COUNT(*) FROM TBL_BOARDREAD WHERE BRDNO=TB.BRDNO) BRDHIT
+             , (SELECT COUNT(*) FROM TBL_BOARDFILE WHERE BRDNO=TB.BRDNO) FILECNT
+             , (SELECT COUNT(*) FROM TBL_BOARDREPLY WHERE BRDNO=TB.BRDNO AND REDELETEFLAG='N') REPLYCNT
+          FROM TBL_BOARD TB
+         INNER JOIN COM_USER CU ON TB.USERNO=CU.USERNO
+         INNER JOIN TBL_BOARDGROUP TBG ON TBG.BGNO=TB.BGNO
+         <include refid="includeBoard"/>
+         ORDER BY BRDNO DESC 
+         <if test="rowStart != null">
+             LIMIT ${rowStart-1}, 10
+         </if>
+	</select>
+	
+	<select id="selectNoticeList" resultType="hu.board.BoardVO" parameterType="hu.board.BoardSearchVO">
+        SELECT BRDNO, BRDTITLE, DATE_FORMAT(BRDDATE,'%Y-%m-%d') BRDDATE, BRDNOTICE, BRDLIKE
+             , TB.USERNO, USERNM BRDWRITER, BGNAME, TB.BGNO
+             , (SELECT COUNT(*) FROM TBL_BOARDREAD WHERE BRDNO=TB.BRDNO) BRDHIT
+             , (SELECT COUNT(*) FROM TBL_BOARDFILE WHERE BRDNO=TB.BRDNO) FILECNT
+             , (SELECT COUNT(*) FROM TBL_BOARDREPLY WHERE BRDNO=TB.BRDNO AND REDELETEFLAG='N') REPLYCNT
+          FROM TBL_BOARD TB
+         INNER JOIN COM_USER CU ON TB.USERNO=CU.USERNO
+         INNER JOIN TBL_BOARDGROUP TBG ON TBG.BGNO=TB.BGNO
+         WHERE BRDDELETEFLAG='N' AND BRDNOTICE='Y'
+        <if test="bgno!=null and bgno!=''">
+            AND TB.BGNO=#{bgno}
+        </if>  
+         ORDER BY BRDNO DESC 
+         LIMIT 3
+    </select> 
+    
+    
+
+
+
+</mapper>
